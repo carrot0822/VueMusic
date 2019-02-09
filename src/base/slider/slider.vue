@@ -68,6 +68,9 @@ export default {
         click: true
       })
     }
+  },
+  destroyed() {
+    clearTimeout(this.timer)
   }
 
 }
