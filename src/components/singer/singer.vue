@@ -83,8 +83,11 @@ export default {
        }
      }
      ret.sort((a, b) => {
+       // StringObject.charCodeAt 返回指定位置的字符的 Unicode 编码
+       // charAt() 返回指定位置的字符的字符字串
         return a.title.charCodeAt(0) - b.title.charCodeAt(0)
      })
+     // arrObject.concat(array) 把array里的元素全部加载到第一个数组对象中形成一个新的数组 而不是单纯的数组合并
      return hot.concat(ret)
     }
   }
