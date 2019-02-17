@@ -14,13 +14,18 @@
       >
         <h2 class="list-group-title">{{group.title}}</h2>
         <ul>
-          <li class="list-group-item" v-for="(item, index) in group.items" :key="index">
+          <li class="list-group-item" 
+              v-for="(item, index) in group.items" 
+              :key="index"
+              @click="selectItem(item)"
+              >
             <img class="avatar" v-lazy="item.avatar"/>
             <span class="name">{{item.name}}</span>
           </li>
         </ul>
       </li>
     </ul>
+    <!-- 右侧固定栏-->
     <div class="list-shortcut" 
     @touchstart="onShortcutTouchStart"
     @touchmove.prevent="onShortcutTouchMove"
@@ -88,6 +93,10 @@ export default {
     }
   },
   methods: {
+    // 2/16 用于数据传递 子组件不含有业务相关 只负责传送数据和事件
+    selectItem(item) {
+      this.$emit('select', item)
+    },
     onShortcutTouchStart(e) {
       let anchorIndex = getData(e.target, 'index') // 获取索引值
       console.log(anchorIndex)
@@ -154,7 +163,7 @@ export default {
           this.currentIndex = i
           this.diff = height2 + newY // 差值 group2总高度-滚动的高度= 最顶部高度与group底部的距离
           // console.log(this.currentIndex)
-          console.log(this.diff)
+          // console.log(this.diff)
           return
         }
       }

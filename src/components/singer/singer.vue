@@ -1,8 +1,8 @@
 <template>
   <div class="singer">
-    <list-view :data="singers">
-
+    <list-view :data="singers" @select="selectSinger">
     </list-view>
+    <router-view></router-view>
   </div>
 </template>
 
@@ -12,6 +12,7 @@ import {getSingerList} from '../../api/singer'
 import {ERR_OK} from '../../api/config'
 import Singer from '../../common/js/singer'
 import ListView from '../../base/listview/listview'
+import {mapMutations} from 'vuex'
 
 const HOT_NAME = '热门'
 const HOT_SINGER_LEN = '10'
@@ -29,6 +30,14 @@ export default {
     ListView
   },
   methods: {
+    // 这里内置的API不是很懂
+    selectSinger(singer) {
+      this.$router.push({
+        path: `/singer/${singer.mid}`
+      })
+      this.setSinger(singer)
+      console.log(singer)
+    },
     _getSingerList() {
       getSingerList().then((res) => {
         if (res.code === ERR_OK) {
@@ -89,7 +98,11 @@ export default {
      })
      // arrObject.concat(array) 把array里的元素全部加载到第一个数组对象中形成一个新的数组 而不是单纯的数组合并
      return hot.concat(ret)
-    }
+    },
+    // 
+    ...mapMutations({
+      setSinger: 'SET_SINGER'
+    })
   }
 }
 </script>
