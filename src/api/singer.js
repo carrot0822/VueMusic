@@ -35,7 +35,9 @@ export function getSingerDetail(singerId) {
 
   return jsonp(url, data, options)
 }
-
+// object.assign(target, ...sources) target是目标对象 sources是源对象
+// 目标对象中的属性有相同的值 则属性会被源对象覆盖
+// 作用 把所有可枚举属性的值从一个或者多个源对象复制到目标对象 同时返回修改后目标对象（名字可能变了但地址还是一样）
 export function getSongVkey (songmid) { // 获取歌曲的vkey
   const url = 'https://c.y.qq.com/base/fcgi-bin/fcg_music_express_mobile3.fcg'
   const data = Object.assign({}, {
@@ -53,7 +55,7 @@ export function getSongVkey (songmid) { // 获取歌曲的vkey
 
   return jsonp(url, data)
 }
-
+// 无效函数 但是可以用于分析
 export function getMusic(songmid) {
   const url = '/api/music'
   const data = Object.assign({}, commonParams, {

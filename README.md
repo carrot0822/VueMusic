@@ -138,4 +138,20 @@ For a detailed explanation on how things work, check out the [guide](http://vuej
   如何给已知对象新增加一组数据
   给一个复合对象内所有子对象呢
   6-7:音乐播放源接口的获取是真的困难以及需要抓取 数据的调用操控过滤 总算会一些了
-  
+  song.js创建一个song类来存放各类数据 写入一个fliter函数用于过滤Vuex全局传递的歌手数据 如果没有歌手则不压入数组
+  获取到数据后再进行过滤筛选 再结构赋值 再遍历每一项压入数组中 数组中每一个都是song对象
+  我学到了什么：值得思考 还要这边的组件构建完才知道
+
+  7-1
+  muslic-list组件第一部分开发完成
+  主要涉及到的是数据//由singer-detail组件传递给子组件使用
+    title/关联歌手名  
+    bgImage/关联 这里使用了计算属性来获取 原因是？
+    Songs/估计是为了传递给子组件 那什么时候使用Vuex全局传递呢
+7-2
+Songs-list组件第一部分开发
+接收songs数据 把里面的歌曲名 歌手 /介绍 文字资源加载 样式还少一部分没加载
+music-list组件第二部分开发 使用scroll组件 但是这里的Z-index不大对 动态设定了Z-index的top值来应对各个设备的不一样
+在DOM加载完毕后获取背景图片的高度 这里果然选择的是padding-top撑开来来占位 根据背景图片的高度不同来抓取dom设定
+有所区别的是 组件的dom必须要抓取$el.属性  才能获得DOM 仅仅只有$this.refs.ref不行 $this.refs.ref.$el.style[]
+Songs 还真是传递给songs-list组件的
