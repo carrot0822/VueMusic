@@ -173,3 +173,10 @@ gitFolw的规矩还是要看一下的 感觉
 back按钮回去 调用router自带的API 路由和数据连接其余网页
 随机按钮的填写 绝对定位 居中 图标拉开
 7-1 播放器列表
+7-2 vuex使用场景 多个组件都可以使用应用
+定义Vuex 首先先在state里面定义好最底层的数据 接着在getter当中 映射state里的数据
+更类似计算属性依赖于getter  取得数据后
+如何处理数据 在mutation里定义 
+在mutation定义前 在mutations-typer定义操作名 mutation本义是一个函数
+接受两个参数 一个state  一个需要修改的state里的子元素
+idnex.js是入口文件 引入定义好的5个文件
