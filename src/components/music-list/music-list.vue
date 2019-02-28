@@ -7,7 +7,7 @@
     <h1 class="title" v-html="title"></h1>
     <div class="bg-image" :style="bgStyle" ref="bgImage">
       <div class="play-wrapper">
-        <div ref="playBtn" v-show="songs.length" class="play">
+        <div ref="playBtn" v-show="songs.length>0" class="play">
           <i class="icon-play"></i>
           <span class="text">随机播放全部</span>
         </div>
@@ -27,7 +27,7 @@
     ref="list"
     >
       <div class="song-list-wrapper">
-        <song-list :songs="songs">
+        <song-list @select="selectItem" :songs="songs">
 
         </song-list>
       </div>
@@ -43,6 +43,8 @@ import Scroll from '../../base/scroll/scroll.vue'
 import SongList from '../../base/song-list/song-list'
 import Loading from '../../base/loading/loading'
 import {prefixStyle} from '../../common/js/dom'
+import {mapActions} from 'vuex'
+
 const RESERVED_HEIGHT = 40 // 常量限制歌单列表滚动的高度
 const transform = prefixStyle('transform')
 const backdrop = prefixStyle('backdrop')
@@ -86,7 +88,17 @@ export default {
     },
     back() {
       this.$router.back()
-    }
+    },
+    // 传递过来的数据究竟是什么？
+    selectItem(item, index) {
+      this.selectPlay({
+        list: this.songs, // 传递数据 把这个组件接收的数据存入到Vuex内
+        index: index
+      })
+    },
+    ...mapActions([
+      'selectPlay'
+    ])
   },
   watch: {
     // 监听newY的值/scrollY/滚动的距离/由scroll组件传递
@@ -98,7 +110,7 @@ export default {
       let blur = 0
       this.$refs.layer.style[transform] = `translate3d(0, ${translateY}px, 0)`
       
-      
+      // 处理向上推动的边界条件
       const percent = Math.abs(newY / this.imageHeight)
       if (newY > 0) {
         scale = 1 + percent
@@ -114,10 +126,12 @@ export default {
         zIndex = 10
         this.$refs.bgImage.style.paddingTop = 0
         this.$refs.bgImage.style.height = `${RESERVED_HEIGHT}px`
+        this.$refs.playBtn.style.display = 'none';
       } else {
        // console.log('执行了吗')
         this.$refs.bgImage.style.paddingTop = '70%'
         this.$refs.bgImage.style.height = 0
+        this.$refs.playBtn.style.display = ''
       }
       this.$refs.bgImage.style.zIndex = zIndex
       this.$refs.bgImage.style[transform] = `scale(${scale})`

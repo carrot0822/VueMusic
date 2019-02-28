@@ -180,3 +180,24 @@ back按钮回去 调用router自带的API 路由和数据连接其余网页
 在mutation定义前 在mutations-typer定义操作名 mutation本义是一个函数
 接受两个参数 一个state  一个需要修改的state里的子元素
 idnex.js是入口文件 引入定义好的5个文件
+7-3
+放在APP.Vue文件下 因为不是路由文件
+数据派发 数据传递 songlist派发给musiclist
+musiclist调用action分发给musicplayer
+非业务组件只提供自身所拥有的数据传递出去
+songList点击之后派发给musicList组件 musicList接受后得知被点击后
+获取使用 调用ACtions改变Vuex内的数据 而Vuex内的数据又与playerList的数据相关
+如此就完成了一次数据操控和绑定
+songs数据来源于歌手列表请求而来 包含的数据有
+7-4播放器基础样式
+完成基础的样式结构搭建 绑定相关数据
+表现层： 绑定点击事件 通过修改mutation来修改fullScreen状态 Vuex的修改规则 来更改播放器全屏和微型播放器的状态
+视觉层：绝对定位与flex布局法配合 不外乎是垂直居中 浮动 百分比自适应
+7-5 播放器展开动画 transtion
+本质还是CSS3的属性 添加和移出动画过渡属性
+这里对顶部和底部标签打了个关键帧 自身本身的属性应该也要算关键帧进去 跟AE里面卡动画帧一样 原本的关键帧 入场动画的关键帧 中间关键帧 出场关键帧 其中的transtion就是对其中的步骤拉曲线
+7-6动画函数添加更好的效果
+Vue的transtion的动画钩子函数
+函数库 animition-keyframe
+bug之一 一开始播放器就处于显示状态 已修复 传递数据的问题 源码为何没报错- -
+简述一下动画函数的思路
