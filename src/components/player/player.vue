@@ -35,7 +35,10 @@
           <!-- 进度条和时间 -->
           <div class="progress-wrapper">
             <span class="time time-l">{{format(currentTime)}}</span>
-            <div class="progress-bar-wrapper"></div>
+            <!-- 进度条 -->
+            <div class="progress-bar-wrapper">
+              <progress-bar @percentChange="onProgressBarChange" :percent="percent"></progress-bar>
+            </div>
             <span class="time time-r">{{format(currentSong.duration)}}</span>
           </div>
           <!-- 操作按钮 -->
@@ -92,6 +95,7 @@
 import {mapGetters, mapMutations} from 'vuex'
 import animations from 'create-keyframe-animation'
 import {prefixStyle} from 'common/js/dom'
+import ProgressBar from '../../base/progress-bar/progress-bar'
 
 const transform = prefixStyle('transform')
 export default {
@@ -100,6 +104,9 @@ export default {
       songReady: false, // 用于控制歌曲是否能够播放
       currentTime: 0 // 用于存放播放时间
     }
+  },
+  components: {
+    ProgressBar
   },
   computed: {
     playIcon() {
@@ -113,6 +120,9 @@ export default {
     },
     disableCls() {
       return this.songReady ? '':'disable'
+    },
+    percent() {
+      return this.currentTime / this.currentSong.duration
     },
     ...mapGetters([
       'fullScreen',
@@ -160,7 +170,7 @@ export default {
       }
       let index = this.currentIndex - 1
       if (index === -1) {
-        index = this.playList.length
+        index = this.playList.length - 1
       }
       this.setCurrentIndex(index)
       if (!this.playing) {
@@ -195,6 +205,7 @@ export default {
     },
     // 播放时间相关
     updateTime(e) {
+      // 获得此时播放的时间数
       this.currentTime = e.target.currentTime
     },
     format(interval) {
@@ -211,6 +222,13 @@ export default {
         len ++
       }
       return num
+    },
+    // 子组件派发的事件触发函数 完成了一次数据双向绑定
+    onProgressBarChange(percent) {
+      this.$refs.audio.currentTime = percent * this.currentSong.duration
+      if (!this.playing) {
+        this.togglePlaying()
+      }
     },
     ...mapMutations({
       setFullScreen: 'SET_FULL_SCREEN', // 映射mututaions内的修改数据数据方法拿到此组件使用
@@ -369,6 +387,7 @@ export default {
         position: absolute;
         bottom: 50px;
         width: 100%;
+        /**来源于控制组件的样式 */
         .progress-wrapper
           display: flex
           align-items: center
