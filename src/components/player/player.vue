@@ -44,7 +44,7 @@
           <!-- 操作按钮 -->
           <div class="operators">
             <div class="icon i-left">
-              <i  class="icon-sequence"></i>
+              <i @click="changeMode" :class="iconMode"></i>
             </div>
             <div class="icon i-left" :class="disableCls">
               <i @click="prev" class="icon-prev"></i>
@@ -99,6 +99,7 @@ import animations from 'create-keyframe-animation'
 import {prefixStyle} from 'common/js/dom'
 import ProgressBar from '../../base/progress-bar/progress-bar'
 import ProgressCircle from '../../base/progress-circle/progress-circle'
+import {playMode} from 'common/js/config'
 const transform = prefixStyle('transform')
 export default {
   data() {
@@ -113,16 +114,19 @@ export default {
     ProgressCircle
   },
   computed: {
-    playIcon() {
+    playIcon() { // 播放按钮的样式控制
       return this.playing ? 'icon-pause': 'icon-play';
     },
-    miniIcon() {
+    miniIcon() { // mini播放器播放按钮控制
       return this.playing ? 'icon-pause-mini': 'icon-play-mini';
     },
-    cdCls() {
+    cdCls() { // 圆形唱片的旋转动画
       return this.playing ? 'play' : 'play pause'
     },
-    disableCls() {
+    iconMode() { // Mode数据绑定样式
+      return this.mode === playMode.sequence ? 'icon-sequence' : this.mode === playMode.loop ? 'icon-loop' : 'icon-random'
+    },
+    disableCls() { // 点击禁用样式
       return this.songReady ? '':'disable'
     },
     percent() { // 百分比
@@ -133,7 +137,8 @@ export default {
       'playing',
       'currentSong',
       'playList',
-      'currentIndex'
+      'currentIndex',
+      'mode'
     ])
   },
   watch:{
@@ -200,6 +205,10 @@ export default {
       // 第一首执行完后调整为false 等待下一次加载事件的循环
       this.songReady = false
     },
+    changeMode() {
+      const mode = (this.mode + 1) % 3 // 点击一次累加但把值域维持在3以内
+      this.setPlayMode(mode) // 修改mode
+    },
     // 额外情况控制
     ready() {
       this.songReady = true
@@ -237,7 +246,8 @@ export default {
     ...mapMutations({
       setFullScreen: 'SET_FULL_SCREEN', // 映射mututaions内的修改数据数据方法拿到此组件使用
       setPlayingState: 'SET_PLAYING_STATE', // 映射修改状态的数据
-      setCurrentIndex: 'SET_CURRENT_INDEX'
+      setCurrentIndex: 'SET_CURRENT_INDEX',
+      setPlayMode: 'SET_PLAY_MODE'
     }),
     // 动画钩子函数 目的是获得 圆片间XY轴的距离和比例大小 然后利用translated做偏移做动画而非直接改变style
     _getPosAndScale() {
