@@ -86,6 +86,7 @@
     <audio ref="audio" 
     @canplay="ready" 
     @error="error" 
+    @ended="end"
     :src="currentSong.url"
     @timeupdate="updateTime"
     ></audio>
@@ -100,6 +101,7 @@ import {prefixStyle} from 'common/js/dom'
 import ProgressBar from '../../base/progress-bar/progress-bar'
 import ProgressCircle from '../../base/progress-circle/progress-circle'
 import {playMode} from 'common/js/config'
+import {shuffle} from 'common/js/util'
 const transform = prefixStyle('transform')
 export default {
   data() {
@@ -138,11 +140,16 @@ export default {
       'currentSong',
       'playList',
       'currentIndex',
-      'mode'
+      'mode',
+     ' sequenceList'
     ])
   },
   watch:{
-    currentSong() {
+    // 难怪监听的是歌曲而不是列表中的索引号
+    currentSong(newSong, oldSong) { // 来了 watch监听函数的底层 只有数据有变动就会执行
+      if (newSong.id === oldSong.id) {
+        return
+      }
       // 需要等待audio加载完才可以
       this.$nextTick(()=>{
         this.$refs.audio.play()
@@ -190,7 +197,8 @@ export default {
     next() {
       // 如果是false就不执行 禁用按钮 直到自定义事件返回true的时候
       // 手动补了一个异步加载的事件
-      if (!this.songReady) {
+      // 应该还有一个监听mode的 如果是随机播放 那么next应该是随机变动index的
+      if (!this.songReady) { // 如果歌曲没准备好就不执行
         return
       }
       let index = this.currentIndex + 1
@@ -205,9 +213,36 @@ export default {
       // 第一首执行完后调整为false 等待下一次加载事件的循环
       this.songReady = false
     },
+    end() { // 为啥叫这个名
+      if (this.mode === playMode.loop) {
+        this.loop()
+      } else {
+        this.next() //
+      }
+    },
+    loop() {
+      this.$refs.audio.currentTime =0
+      this.$refs.audio.play()
+    },
+    // mode改变其实改变的是播放列表
     changeMode() {
       const mode = (this.mode + 1) % 3 // 点击一次累加但把值域维持在3以内
       this.setPlayMode(mode) // 修改mode
+      let list = null
+      if (mode === playMode.random) { // 此处playmode来源于外部configJS文件的引入
+        list = shuffle(this.sequenceList) // 对数组进行乱序
+      } else {
+        list = this.sequenceList
+      }
+      this.resetCurrentIndex(list) // 播放列表改动后 索引不变的话歌曲会被切换
+      this.setPlayList(list)
+    },
+    // 重置此时的ID号
+    resetCurrentIndex(list) {
+      let index = list.findIndex((item) => { // 可以获取每个元素的Id并进行筛选返回
+        return item.id === this.currentSong.id
+      })
+      this.setCurrentIndex(index) // 再把此时播放的ID设置回去
     },
     // 额外情况控制
     ready() {
@@ -247,7 +282,8 @@ export default {
       setFullScreen: 'SET_FULL_SCREEN', // 映射mututaions内的修改数据数据方法拿到此组件使用
       setPlayingState: 'SET_PLAYING_STATE', // 映射修改状态的数据
       setCurrentIndex: 'SET_CURRENT_INDEX',
-      setPlayMode: 'SET_PLAY_MODE'
+      setPlayMode: 'SET_PLAY_MODE',
+      setPlayList: 'SET_PLAY_LIST'
     }),
     // 动画钩子函数 目的是获得 圆片间XY轴的距离和比例大小 然后利用translated做偏移做动画而非直接改变style
     _getPosAndScale() {

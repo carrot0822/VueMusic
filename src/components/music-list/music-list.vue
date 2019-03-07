@@ -7,7 +7,7 @@
     <h1 class="title" v-html="title"></h1>
     <div class="bg-image" :style="bgStyle" ref="bgImage">
       <div class="play-wrapper">
-        <div ref="playBtn" v-show="songs.length>0" class="play">
+        <div @click="random" ref="playBtn" v-show="songs.length>0" class="play">
           <i class="icon-play"></i>
           <span class="text">随机播放全部</span>
         </div>
@@ -95,6 +95,9 @@ export default {
         list: this.songs, // 传递数据 把这个组件接收的数据存入到Vuex内
         index: index
       })
+    },
+    random() {
+      
     },
     ...mapActions([
       'selectPlay'
