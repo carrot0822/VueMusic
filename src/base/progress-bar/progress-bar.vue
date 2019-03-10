@@ -73,8 +73,11 @@ export default {
     // 
     progressClick(e) {
       // 这几个获得的值该确认一下了吧
-      console.log(e.offsetX)
-      this._offset(e.offsetX)
+      // 点击按钮的时候offset不对
+      const rect = this.$refs.progressBar.getBoundingClientRect() // 离浏览器窗口的距离 有上右下左四个值
+      const offsetWidth = e.pageX - rect.left
+      console.log(e.rect)
+      this._offset(offsetWidth)
       this._triggerPercent()
     },
     // 派发进度百分比给父组件

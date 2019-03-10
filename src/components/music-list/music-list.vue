@@ -96,11 +96,16 @@ export default {
         index: index
       })
     },
+    // 随机播放全部
     random() {
-      
+      this.randomPlay({
+        list: this.songs
+      })
+      console.log(this.songs)
     },
     ...mapActions([
-      'selectPlay'
+      'selectPlay',
+      'randomPlay'
     ])
   },
   watch: {

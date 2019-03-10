@@ -141,7 +141,7 @@ export default {
       'playList',
       'currentIndex',
       'mode',
-     ' sequenceList'
+     'sequenceList'
     ])
   },
   watch:{
@@ -228,9 +228,13 @@ export default {
     changeMode() {
       const mode = (this.mode + 1) % 3 // 点击一次累加但把值域维持在3以内
       this.setPlayMode(mode) // 修改mode
-      let list = null
+      let list = []
+      console.log(typeof(list))
       if (mode === playMode.random) { // 此处playmode来源于外部configJS文件的引入
+        console.log(this.sequenceList)
         list = shuffle(this.sequenceList) // 对数组进行乱序
+        console.log('切换到随机了')
+        console.log(list)
       } else {
         list = this.sequenceList
       }
@@ -242,6 +246,7 @@ export default {
       let index = list.findIndex((item) => { // 可以获取每个元素的Id并进行筛选返回
         return item.id === this.currentSong.id
       })
+      console.log(index)
       this.setCurrentIndex(index) // 再把此时播放的ID设置回去
     },
     // 额外情况控制
@@ -283,7 +288,7 @@ export default {
       setPlayingState: 'SET_PLAYING_STATE', // 映射修改状态的数据
       setCurrentIndex: 'SET_CURRENT_INDEX',
       setPlayMode: 'SET_PLAY_MODE',
-      setPlayList: 'SET_PLAY_LIST'
+      setPlayList: 'SET_PLAYLIST'
     }),
     // 动画钩子函数 目的是获得 圆片间XY轴的距离和比例大小 然后利用translated做偏移做动画而非直接改变style
     _getPosAndScale() {
