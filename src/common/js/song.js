@@ -1,3 +1,7 @@
+import {getLyric} from '../../api/song'
+import {ERR_OK} from '../../api/config'
+import {Base64} from 'js-base64'
+// 歌词对象原型
 export default class Song {
   constructor({id, mid, guid, vkey, singer, name, album, duration, image, url}) {
     this.id = id
@@ -11,8 +15,28 @@ export default class Song {
     // this.guid = guid
     // this.vkey = vkey
   }
+
+  getLyric() {
+    if (this.lyric) {
+      return Promise.resolve(this.lyric)
+    }
+    // 返回一个新的promise对象 用于获取api然后把结果转码后再次转发 因为是promise对象啊
+    return new Promise((resolve, reject) => {
+      console.log('NMD?')
+      getLyric(this.mid).then((res) => {
+        if (res.retcode === ERR_OK) {
+          this.lyric = Base64.decode(res.lyric) // 直接创建的形式
+          console.log(this.lyric)
+          resolve(this.lyric)
+        } else {
+          reject('no lyric')
+        }
+      })
+    })
+  }
 }
 
+// 实例化一个歌词对象 并对其中的数据进行过滤操作
 export function createSong(musicData, vkey) {
   return new Song({
     id: musicData.songid,
@@ -38,4 +62,3 @@ function filterSinger(singer) {
   })
   return ret.join('/')
 }
-

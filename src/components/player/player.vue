@@ -29,6 +29,24 @@
               </div>
             </div>
           </div>
+          <!-- 歌词部分 是藏在右边的便于左右滑动 -->
+          <scroll class="middle-r" 
+            ref="lyricList"
+            :data="currentLyric && currentLyric.lines"
+          >
+            <div class="lyric-wrapper">
+              <div v-if="currentLyric">
+                <p ref="lyricLine"
+                   class="text"
+                   v-for="(line, index) in currentLyric.lines"
+                   :key="index"
+                   :class="{'current': currentLineNum === index}"
+                >
+                  {{line.txt}}
+                </p>
+              </div>
+            </div>
+          </scroll>
         </div>
         <!-- 下方按钮 -->
         <div class="bottom">
@@ -102,18 +120,23 @@ import ProgressBar from '../../base/progress-bar/progress-bar'
 import ProgressCircle from '../../base/progress-circle/progress-circle'
 import {playMode} from 'common/js/config'
 import {shuffle} from 'common/js/util'
+import Lyric from 'lyric-parser'
+import Scroll from 'base/scroll/scroll'
 const transform = prefixStyle('transform')
 export default {
   data() {
     return {
       songReady: false, // 用于控制歌曲是否能够播放
       currentTime: 0, // 用于存放播放时间
-      radius: 32 // 这里传值要注意写固定值数字会被当成字符串传递
+      radius: 32, // 这里传值要注意写固定值数字会被当成字符串传递
+      currentLyric: null, // 实例的歌词
+      currentLineNum: 0
     }
   },
   components: {
     ProgressBar,
-    ProgressCircle
+    ProgressCircle,
+    Scroll
   },
   computed: {
     playIcon() { // 播放按钮的样式控制
@@ -153,6 +176,7 @@ export default {
       // 需要等待audio加载完才可以
       this.$nextTick(()=>{
         this.$refs.audio.play()
+        this.getLyric() // 这里是什么时候变成Song对象的
       })
     },
     // 这里才真正的把state的数据与行为绑定在了一起
@@ -165,6 +189,29 @@ export default {
     }
   },
   methods: {
+    // 歌词播放相关
+    getLyric() {
+      this.currentSong.getLyric().then((lyric) => {
+        this.currentLyric = new Lyric(lyric, this.handleLyric) // 返回的是一个promise对象
+        
+        if (this.playing) {
+          this.currentLyric.play() // 这个函数不是自带的 是后续封装给的
+        }
+        console.log(this.currentLyric)
+      })
+    },
+    //  这里的函数看不懂了
+    handleLyric({lineNum, txt}) {// 这个传值
+      this.currentLineNum = lineNum
+      if(lineNum > 5) {
+        let lineEl = this.$refs.lyricLine[lineNum -5]
+        // 调用子组件的方法
+        this.$refs.lyricList.scrollToElement(lineEl, 1000)
+      } else {
+        this.$refs.lyricList.scrollToElement(0, 0, 1000)
+      }
+    },
+    // 返回按钮相关
     back() {
       this.setFullScreen(false)
       console.log('?')
@@ -438,6 +485,35 @@ export default {
                 width: 100%;
                 height: 100%;
                 border-radius: 50%
+        /*这一个歌词又是？这里滑动不会又是依赖插件 而不是手势库*/
+        .playing-lyric-wrapper
+          width: 80%
+          margin: 30px auto 0 auto
+          overflow: hidden
+          text-align: center
+          .playing-lyric
+            height: 20px
+            line-height: 20px
+            font-size: $font-size-medium
+            color: $color-text-l
+        /*歌词部分 */
+        .middle-r
+          display: inline-block
+          vertical-align: top
+          width: 100%
+          height: 100%
+          overflow: hidden
+          .lyric-wrapper
+            width: 80%
+            margin: 0 auto
+            overflow: hidden
+            text-align: center
+            .text
+              line-height: 32px
+              color: $color-text-l
+              font-size: $font-size-medium
+              &.current
+                color: $color-text
       .bottom
         position: absolute;
         bottom: 50px;

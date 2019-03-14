@@ -26,7 +26,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
   },
   // cheap-module-eval-source-map is faster for development
   devtool: config.dev.devtool,
-
+// 这里的假装代理获取数据的操作是怎么回事
   // these devServer options should be customized in /config/index.js
   devServer: {
     clientLogLevel: 'warning',
@@ -79,6 +79,32 @@ const devWebpackConfig = merge(baseWebpackConfig, {
           console.log(e)
         })
       })
+      // 为啥可以直接用axios.get没引入啊
+      app.get('/api/lyric', function (req, res) {
+        var url = 'https://szc.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg'
+        axios.get(url, {
+          headers: {
+            referer: 'https://y.qq.com/',
+            host: 'c.y.qq.com'
+          },
+          params: req.query
+        }).then((response) => {
+          // 数据的包容性 检测
+          var ret = response.data
+          /*
+          if(typeof ret === 'string'){
+            var reg = /^\w+\(({[^()]+})\)$/
+            var matches = ret.match(reg)
+            if(match) {
+              ret = JSON.parse(matches[1])
+            }
+          }*/
+          res.json(response.data) // 作为返回值给axios
+        }).catch((e) => {
+          console.log(e)
+        })
+      })
+
     }
   },
   plugins: [
