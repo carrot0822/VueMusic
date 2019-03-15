@@ -1,5 +1,5 @@
 <template>
-  <div class="recommend">
+  <div class="recommend" ref="recommend">
     <scroll ref="scroll" class="recommend-content" :data="discList">
       <div>
         <loading class="loading-container" v-show="!recommends.length"></loading>
@@ -39,9 +39,11 @@ import Slider from '../../base/slider/slider'
 import Loading from '../../base/loading/loading'
 import {getRecommend,getDiscList} from '../../api/recommend'
 import {ERR_OK} from '../../api/config'
+import {playListMixin} from '../../common/js/mixin'
 
 
 export default {
+  mixins: [playListMixin],
   data() {
     return {
       recommends : [],
@@ -53,6 +55,12 @@ export default {
     this._getDiscList()
   },
   methods: {
+    // 这里也是为了使mini播放器下方兼容 这里也要回头看看scoll组件 更要看看betterScroll插件
+    handlePlaylist(playlist) {
+      const bottom = playlist.length > 0 ? '60px' : ''
+      this.$refs.recommend.style.bottom = bottom
+      this.$refs.scroll.refresh()
+    },
     _getRecommend() {
       getRecommend().then((res) => {
         if (res.code === ERR_OK) {
@@ -60,14 +68,16 @@ export default {
           // console.log(res.data.slider)
         }
       })
+      
     },
     _getDiscList() {
       getDiscList().then((res) => {
         if (res.code === ERR_OK) {
+          console.log(res.data)
           this.discList = res.data.list
-          console.log(this.discList)
         }
       })
+      
     },
     loadImg() {
       if (!this.checkLoaded) { // 这个checkLoaded的数据是哪里来的？

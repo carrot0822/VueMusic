@@ -32,6 +32,9 @@
                 <img class="image" :src="currentSong.image">
               </div>
             </div>
+            <div class="playing-lyric-wrapper">
+              <div class="playing-lyric">{{playingLyric}}</div>
+            </div>
           </div>
           <!-- 歌词部分 是藏在右边的便于左右滑动 -->
           <scroll class="middle-r" 
@@ -142,7 +145,7 @@ export default {
       currentLyric: null, // 实例的歌词
       currentLineNum: 0, // 播放歌词的行数
       currentShow: 'cd', // 控制小圆点被选中的状态
-      playingLyric: '' // 歌词正在播放？
+      playingLyric: '' // 正在播放的歌词
     }
   },
   components: {
@@ -185,16 +188,28 @@ export default {
     ])
   },
   watch:{
+    // 边界条件 如果被切到后台的情况 小程序API的思考情况很多啊
     // 难怪监听的是歌曲而不是列表中的索引号
     currentSong(newSong, oldSong) { // 来了 watch监听函数的底层 只有数据有变动就会执行
       if (newSong.id === oldSong.id) {
         return
       }
-      // 需要等待audio加载完才可以
+      if(this.currentLyric) {
+        this.currentLyric.stop()
+      }
+      // 需要等待audio加载完才可以 原理？
+      // 切换到后台的话 js代码不会执行 那APP是如何做到在后台播放的
+      // 这里利用的是事件队列机制的关系 定时器会在同步执行完后再执行
+      setTimeout(()=> {
+        this.$refs.audio.play()
+        this.getLyric()
+      }, 1000)
+      /*
       this.$nextTick(()=>{
         this.$refs.audio.play()
         this.getLyric() // 这里是什么时候变成Song对象的
       })
+      */
     },
     // 这里才真正的把state的数据与行为绑定在了一起
     playing(newPlaying) {
@@ -206,7 +221,7 @@ export default {
     }
   },
   methods: {
-    // 歌词播放相关
+    // 歌词播放相关 这里一直没懂
     getLyric() {
       this.currentSong.getLyric().then((lyric) => {
         this.currentLyric = new Lyric(lyric, this.handleLyric) // 返回的是一个promise对象
@@ -215,6 +230,11 @@ export default {
           this.currentLyric.play() // 这个函数不是自带的 是后续封装给的
         }
         console.log(this.currentLyric)
+      }).catch(() => {
+        // 歌词未获取到的情况 凡是与网络/用户操控数据都要考虑到失败
+        this.currentLyric = null
+        this.playingLyric = ''
+        this.currentLineNum = 0
       })
     },
     //  这里的函数看不懂了
@@ -227,6 +247,7 @@ export default {
       } else {
         this.$refs.lyricList.scrollToElement(0, 0, 1000)
       }
+      this.playingLyric = txt // 把歌词给他 这里封的几个函数完全猜不透
     },
     /* 歌词部分的滑动事件 */
     // Vue的this问题一定很怪啊 如果没有的话 this会自动创建一个变量挂载
@@ -239,7 +260,7 @@ export default {
       console.log(this.touch.initiated)
     },
     middleTouchMove(e) {
-      console.log(this.touch.initiated)
+      
       if(!this.touch.initiated) {
         return
       }
@@ -251,8 +272,11 @@ export default {
         return
       }
       const left = this.currentShow === 'cd'? 0: -window.innerWidth
+      console.log(`当前的范围值${left}`)
+      console.log(`当前移动值${deltaX}`)
       const offsetWidth = Math.min(0, Math.max(-window.innerWidth, left + deltaX)) // 限制可以滑动的距离
-      this.touch.parcent = Math.abs(offsetWidth / window.innerWidth)
+      this.touch.percent = Math.abs(offsetWidth / window.innerWidth)
+      console.log(`当前百分比为${this.touch.parcent}`)
       this.$refs.lyricList.$el.style[transform] = `translate3d(${offsetWidth}px,0,0)` // 根据滑动的距离修改偏移值
       this.$refs.lyricList.$el.style[transitionDuration] = 0 // 过渡持续事件变0？
       this.$refs.middleL.style.opacity = 1 - this.touch.percent
@@ -261,20 +285,22 @@ export default {
     },
     
     middleTouchEnd() {
-      
       let offsetWidth // 根据偏移宽度计算
       let opacity // 控制是谁的透明度
+      console.log(this.currentShow)
+      console.log(this.touch.percent)
       if(this.currentShow === 'cd') {
         if(this.touch.percent > 0.1) {
           offsetWidth = -window.innerWidth
           opacity = 0
           this.currentShow = 'lyric'
         } else {
+          console.log('是你执行了？')
           offsetWidth = 0
           opacity = 1
         }
       } else {
-        if(this.touch.percent < 0.9) {
+        if(this.touch.percent < 0.9) { // 此时的偏移量 当歌词面显示的时候 percent是10
           offsetWidth = 0
           this.currentShow = 'cd'
           opacity = 1
@@ -283,12 +309,14 @@ export default {
           opacity = 0
         }
       }
-      const time = 300
+      const time = 300 // 过渡时间 制作动画
       this.$refs.lyricList.$el.style[transform] = `translate3d(${offsetWidth}px,0,0)`
+      // 偏移时间 这里需要注意的是几个偏移值 分别打印看看
       this.$refs.lyricList.$el.style[transitionDuration] = `${time}ms`
       this.$refs.middleL.style.opacity = opacity
       this.$refs.middleL.style[transitionDuration] = `${time}ms`
       this.touch.initiated = false
+      console.log(`当前偏移值${offsetWidth}`)
       
     },
     
@@ -306,19 +334,26 @@ export default {
         return
       }
       this.setPlayingState(!this.playing) // 对已有的playing状态取反
+      if(this.currentLyric) { // 未知方法 大概是切换当前播放状态 让歌词不再滚动
+        this.currentLyric.togglePlay()
+      }
     },
     // 都依赖于播放功能 内容切换 再次播放
     prev() {
-      if (!this.songReady) {
+      if (!this.songReady) { // 如果这时的播放状态没准备好 初始化条件
         return
       }
-      let index = this.currentIndex - 1
-      if (index === -1) {
-        index = this.playList.length - 1
-      }
-      this.setCurrentIndex(index)
-      if (!this.playing) {
-        this.togglePlaying() // 如果没有播放 就让他播放
+      if (this.playList.length === 1) {
+        this.loop()
+      } else {
+        let index = this.currentIndex - 1
+        if (index === -1) {
+          index = this.playList.length - 1
+        }
+        this.setCurrentIndex(index)
+        if (!this.playing) {
+          this.togglePlaying() // 如果没有播放 就让他播放
+        }
       }
       this.songReady = false
     },
@@ -329,19 +364,25 @@ export default {
       if (!this.songReady) { // 如果歌曲没准备好就不执行
         return
       }
-      let index = this.currentIndex + 1
-      // 处理边界情况 最后一首的时候
-      if (index === this.playList.length) {
-        index = 0
+      // 边界条件 当只有一首的时候
+      if (this.playList.length ===1) {
+        this.loop()
+      } else {
+        let index = this.currentIndex + 1
+        // 处理边界情况 最后一首的时候
+        if (index === this.playList.length) {
+          index = 0
+        }
+        this.setCurrentIndex(index)
+        if (!this.playing) {
+          this.togglePlaying() // 如果没有播放 就让他播放
+        }
       }
-      this.setCurrentIndex(index)
-      if (!this.playing) {
-        this.togglePlaying() // 如果没有播放 就让他播放
-      }
+      
       // 第一首执行完后调整为false 等待下一次加载事件的循环
       this.songReady = false
     },
-    end() { // 为啥叫这个名
+    end() { // 为啥叫这个名 因为是歌曲播放结束后的事件
       if (this.mode === playMode.loop) {
         this.loop()
       } else {
@@ -351,7 +392,12 @@ export default {
     loop() {
       this.$refs.audio.currentTime =0
       this.$refs.audio.play()
+      // 歌词重置
+      if(this.currentLyric){
+        this.currentLyric.seek()  // 歌词播放重置
+      }
     },
+    /*模式切换的三个功能相关 */
     // mode改变其实改变的是播放列表
     changeMode() {
       const mode = (this.mode + 1) % 3 // 点击一次累加但把值域维持在3以内
@@ -389,7 +435,7 @@ export default {
       // 获得此时播放的时间数
       this.currentTime = e.target.currentTime
     },
-    format(interval) {
+    format(interval) { // 格式化事件
       interval = interval | 0
       const minute = interval / 60 | 0
       const second = this._pad(interval % 60)
@@ -404,11 +450,16 @@ export default {
       }
       return num
     },
-    // 子组件派发的事件触发函数 完成了一次数据双向绑定
+    // 子组件派发的事件触发函数 完成了一次数据双向绑定 进度条的时间由进度条百分比控制
     onProgressBarChange(percent) {
-      this.$refs.audio.currentTime = percent * this.currentSong.duration
+      const currentTime = percent * this.currentSong.duration
+      this.$refs.audio.currentTime = currentTime
       if (!this.playing) {
         this.togglePlaying()
+      }
+      // 歌词 传入百分比控制歌词的播放
+      if(this.currentLyric) {
+        this.currentLyric.seek(currentTime) // 这个API
       }
     },
     ...mapMutations({

@@ -44,11 +44,13 @@ import SongList from '../../base/song-list/song-list'
 import Loading from '../../base/loading/loading'
 import {prefixStyle} from '../../common/js/dom'
 import {mapActions} from 'vuex'
+import {playListMixin} from '../../common/js/mixin'
 
 const RESERVED_HEIGHT = 40 // 常量限制歌单列表滚动的高度
 const transform = prefixStyle('transform')
 const backdrop = prefixStyle('backdrop')
 export default {
+  mixins:[playListMixin],
   props: {
     bgImage: { // 不接受横线命名
       type: String,
@@ -83,6 +85,12 @@ export default {
     }
   },
   methods: {
+    // 这里待定
+    handlePlaylist(playlist) {
+      const bottom = playlist.length > 0 ? '60px' : ''
+      this.$refs.list.$el.style.bottom = bottom
+      this.$refs.list.refresh()
+    },
     scroll(pos) {
       this.scrollY = pos.y
     },

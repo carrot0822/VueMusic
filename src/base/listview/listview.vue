@@ -107,6 +107,10 @@ export default {
       console.log(this.touch)
       this._scrollTo(anchorIndex) // 滚动到相应位置？
     },
+    // 调用滚动组件并且暴露给父组件调用
+    refresh() {
+      this.$refs.listview.refresh()
+    },
     onShortcutTouchMove(e) {
       let firstTouch = e.touches[0] // 获取第一个滚动的触摸对象
       this.touch.y2 = firstTouch.pageY // 获取Y轴距离
