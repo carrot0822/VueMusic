@@ -21,8 +21,12 @@
             <h2 class="subtitle" v-html="currentSong.singer"></h2>
         </div>
         <!-- middle 中间唱片歌词层 -->
-        <div class="middle">
-          <div class="middle-l">
+        <div class="middle"
+             @touchstart.prevent = "middleTouchStart"
+             @touchmove.prevent = "middleTouchMove"
+             @touchend = "middleTouchEnd"
+        >
+          <div class="middle-l" ref="middleL">
             <div class="cd-wrapper" ref="cdWrapper">
               <div class="cd" :class="cdCls">
                 <img class="image" :src="currentSong.image">
@@ -50,6 +54,11 @@
         </div>
         <!-- 下方按钮 -->
         <div class="bottom">
+          <!-- 小圆点 -->
+          <div class="dot-wrapper">
+            <span class="dot" :class="{'active':currentShow === 'cd'}" ></span>
+            <span class="dot" :class="{'active':currentShow === 'lyric'}"></span>
+          </div>
           <!-- 进度条和时间 -->
           <div class="progress-wrapper">
             <span class="time time-l">{{format(currentTime)}}</span>
@@ -123,6 +132,7 @@ import {shuffle} from 'common/js/util'
 import Lyric from 'lyric-parser'
 import Scroll from 'base/scroll/scroll'
 const transform = prefixStyle('transform')
+const transitionDuration = prefixStyle('transitionDuration') 
 export default {
   data() {
     return {
@@ -130,7 +140,9 @@ export default {
       currentTime: 0, // 用于存放播放时间
       radius: 32, // 这里传值要注意写固定值数字会被当成字符串传递
       currentLyric: null, // 实例的歌词
-      currentLineNum: 0
+      currentLineNum: 0, // 播放歌词的行数
+      currentShow: 'cd', // 控制小圆点被选中的状态
+      playingLyric: '' // 歌词正在播放？
     }
   },
   components: {
@@ -138,6 +150,11 @@ export default {
     ProgressCircle,
     Scroll
   },
+  // 钩子函数
+  created() {
+    this.touch = {}
+  },
+  /*计算属性和监听器 */
   computed: {
     playIcon() { // 播放按钮的样式控制
       return this.playing ? 'icon-pause': 'icon-play';
@@ -211,6 +228,70 @@ export default {
         this.$refs.lyricList.scrollToElement(0, 0, 1000)
       }
     },
+    /* 歌词部分的滑动事件 */
+    // Vue的this问题一定很怪啊 如果没有的话 this会自动创建一个变量挂载
+    middleTouchStart(e) {
+      this.touch.initiated = true // 这个值控制的是谁？ 初始化
+      const touch = e.touches[0] // this指向迷啊
+      // 存储第一次点击的坐标
+      this.touch.startX = touch.pageX
+      this.touch.startY = touch.pageY
+      console.log(this.touch.initiated)
+    },
+    middleTouchMove(e) {
+      console.log(this.touch.initiated)
+      if(!this.touch.initiated) {
+        return
+      }
+      const touch = e.touches[0]
+      // 计算出滑动的距离和第一次触碰的距离 来判定是怎么滑的 左滑为负
+      const deltaX = touch.pageX - this.touch.startX
+      const deltaY = touch.pageY - this.touch.startY
+      if(Math.abs(deltaY) > Math.abs(deltaX)) { // 当向下划远大于X轴滑 不触发
+        return
+      }
+      const left = this.currentShow === 'cd'? 0: -window.innerWidth
+      const offsetWidth = Math.min(0, Math.max(-window.innerWidth, left + deltaX)) // 限制可以滑动的距离
+      this.touch.parcent = Math.abs(offsetWidth / window.innerWidth)
+      this.$refs.lyricList.$el.style[transform] = `translate3d(${offsetWidth}px,0,0)` // 根据滑动的距离修改偏移值
+      this.$refs.lyricList.$el.style[transitionDuration] = 0 // 过渡持续事件变0？
+      this.$refs.middleL.style.opacity = 1 - this.touch.percent
+      this.$refs.middleL.style[transitionDuration] = 0
+      
+    },
+    
+    middleTouchEnd() {
+      
+      let offsetWidth // 根据偏移宽度计算
+      let opacity // 控制是谁的透明度
+      if(this.currentShow === 'cd') {
+        if(this.touch.percent > 0.1) {
+          offsetWidth = -window.innerWidth
+          opacity = 0
+          this.currentShow = 'lyric'
+        } else {
+          offsetWidth = 0
+          opacity = 1
+        }
+      } else {
+        if(this.touch.percent < 0.9) {
+          offsetWidth = 0
+          this.currentShow = 'cd'
+          opacity = 1
+        } else {
+          offsetWidth = -window.innerWidth
+          opacity = 0
+        }
+      }
+      const time = 300
+      this.$refs.lyricList.$el.style[transform] = `translate3d(${offsetWidth}px,0,0)`
+      this.$refs.lyricList.$el.style[transitionDuration] = `${time}ms`
+      this.$refs.middleL.style.opacity = opacity
+      this.$refs.middleL.style[transitionDuration] = `${time}ms`
+      this.touch.initiated = false
+      
+    },
+    
     // 返回按钮相关
     back() {
       this.setFullScreen(false)
@@ -518,6 +599,21 @@ export default {
         position: absolute;
         bottom: 50px;
         width: 100%;
+        .dot-wrapper
+          text-align: center
+          font-size: 0
+          .dot
+            display: inline-block
+            vertical-align: middle
+            margin: 0 4px
+            width: 8px
+            height: 8px
+            border-radius: 50%
+            background: $color-text-l
+            &.active
+              width: 20px
+              border-radius: 5px
+              background: $color-text-ll
         /**来源于控制组件的样式 */
         .progress-wrapper
           display: flex
