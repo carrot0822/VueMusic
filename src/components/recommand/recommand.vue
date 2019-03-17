@@ -15,7 +15,7 @@
         <div class="recommend-list">
           <h1 class="list-title">热门歌单推荐</h1>
           <ul>
-            <li v-for="(item,index) in discList" class="item" :key="index">
+            <li v-for="(item,index) in discList" @click="selectItem(item)" class="item" :key="index">
               <div class="icon">
                 <img v-lazy="item.imgurl" width="60" height="60"/>
               </div>
@@ -26,9 +26,12 @@
             </li>
           </ul>
         </div>
-        <loading class="loading-container" v-show="!discList.length"></loading>
+        <div class="loading-container" v-show="!discList.length">
+          <loading></loading>
+        </div>
       </div>
     </scroll>
+    <router-view></router-view>
   </div>
 </template>
 
@@ -40,6 +43,7 @@ import Loading from '../../base/loading/loading'
 import {getRecommend,getDiscList} from '../../api/recommend'
 import {ERR_OK} from '../../api/config'
 import {playListMixin} from '../../common/js/mixin'
+import {mapMutations} from 'vuex'
 
 
 export default {
@@ -60,6 +64,13 @@ export default {
       const bottom = playlist.length > 0 ? '60px' : ''
       this.$refs.recommend.style.bottom = bottom
       this.$refs.scroll.refresh()
+    },
+    selectItem(item) { // 小程序传递参数给子页面 子页面根据ID参数去获取相应数据渲染
+      this.$router.push({
+        path:`/recommand/${item.dissid}` //把索引传递给路由 告知创建一个路由文件
+      })
+      // 这点跟小程序的实现是不一样的
+      this.setDisc(item) // 数据写入到公有区域 不过为啥不根据索引号发请求
     },
     _getRecommend() {
       getRecommend().then((res) => {
@@ -85,7 +96,10 @@ export default {
         this.$refs.scroll.refresh()
       }
       
-    }
+    },
+    ...mapMutations({ // 映射改动数据的方法
+      setDisc: 'SET_DISC'
+    })
   },
   components: {
     Slider,
