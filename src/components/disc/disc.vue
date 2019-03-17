@@ -53,7 +53,7 @@ export default {
     _normalLizeSong(list) {
       let ret = []
       list.forEach((musicData) => {
-        if(musicData.songid && musicData.albumid) {
+        if(musicData.songid && musicData.album) {
           ret.push(createSong(musicData)) // 实例合并的数组
         }
       })
