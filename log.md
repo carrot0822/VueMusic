@@ -331,3 +331,25 @@ mixin：分发组件中一种灵活的复用Vue单文件函数的功能
 Vue-router router-view 
 8-1: 路由设定和数据抓取
 每个页面涉及到的数据 应该可以连成一张表了
+不能再摸了
+vue路由跳转：子路由跳转 跳转到其他页面
+vue生命周期：
+three.js canvas.js
+今天的面试题
+网络请求相关：
+http与https的区别 ：https在http明文协议上多了一层ssl协议 使数据变得更为安全
+http与http2的区别： 信道复用
+http请求头里包含了什么：请求链接 请求方法 
+可以性能优化的点
+gulp的打包压缩
+contentType
+明天 其实应该是今天该复习的点
+gulp压缩打包
+vuerouter实现页面跳转
+基础知识补全
+音乐app一集
+需要复习的点：
+移动端到PC端的转变 rem 视口布局
+需要做的 express与mock.js实现前后端分离 最好有例子和项目
+vue+elementUI实现后台管理系统 原理的制作
+Node.js实现登录之类的鉴定
