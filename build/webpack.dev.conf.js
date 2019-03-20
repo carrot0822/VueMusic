@@ -118,7 +118,22 @@ const devWebpackConfig = merge(baseWebpackConfig, {
           console.log(e)
         })
       })
-
+    // 给get做dialing
+    app.get('/api/getTopList', function (req, res) {
+        var url = 'https://c.y.qq.com/v8/fcg-bin/fcg_myqq_toplist.fcg'
+        axios.get(url, {
+          headers: {
+            referer: 'https://c.y.qq.com/',
+            host: 'c.y.qq.com'
+          },
+          params: req.query
+        }).then((response) => {
+          console.log('好像没转发成功吧')
+          res.json(response.data)
+        }).catch((e) => {
+          console.log(e)
+        })
+      })
 
     }
   },
