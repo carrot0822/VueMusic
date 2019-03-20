@@ -353,3 +353,16 @@ vuerouter实现页面跳转
 需要做的 express与mock.js实现前后端分离 最好有例子和项目
 vue+elementUI实现后台管理系统 原理的制作
 Node.js实现登录之类的鉴定
+
+9-1
+完成了排行榜的QQ音乐接口调用
+对于写代理转发跨域请求又多了一些熟练度
+9-2 对排行榜的数据进行绑定 加入滚动组件和load组件 以及使用lazyload插件
+注意mixin的使用
+axios的使用跟ajax其实是类似的 区别就是axios是promise没有回调地狱
+还有就是写好的API 肯定是要return 数据的 promise.resolve返回一个新的promise对象
+父组件调用子组件的方法： 直接$refs.refname.methods方法调用
+子组件调用父组件的方法 ： $parent不现实 还是emit这种自定义事件触发比较合适
+父组件传值子组件
+子组件传值父组件
+Vuerouter要尽快看完 后台要搭起来 echarts也是 别看扁我 硬着头皮变强

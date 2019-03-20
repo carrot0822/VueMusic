@@ -1,7 +1,7 @@
 <template>
   <div class="rank">
-    <scroll :data="topList" class="toplist">
-      <ul
+    <scroll :data="topList" class="toplist" ref="toplist">
+      <ul>
         <li class="item" v-for="(item, index) of topList" :key='index'>
           <div class="icon">
             <img width="100" height="100" v-lazy="item.picUrl" />
@@ -14,7 +14,9 @@
           </ul>
         </li>
       </ul>
-      <div class="loading-container" v-show="!topList.length">正在加载中</div>
+      <div class="loading-container" v-show="!topList.length">
+        <loading></loading>
+      </div>
     </scroll>
     <router-view></router-view>
   </div>
@@ -26,6 +28,9 @@ import {ERR_OK} from '../../api/config'
 import {getTopList} from '../../api/rank'
 import Loading from '../../base/loading/loading'
 import Scroll from '../../base/scroll/scroll'
+import {playlistMixin} from '../../common/js/mixin'
+import {mapMutations} from 'vuex'
+
 export default {
   created() {
       this._getTopList()
@@ -48,6 +53,11 @@ export default {
           console.log(res.data.topList)
         }
       })
+    },
+    handlePlay(playlist) {
+      const bottom = play.length ? '60px': ''
+      this.$refs.rank.style.bottom = bottom
+      this.$refs.toplist.refresh() // 父组件调用子组件的方法 子组件调用父组件的方法
     }
   }
 }
