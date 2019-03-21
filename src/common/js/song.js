@@ -36,7 +36,7 @@ export default class Song {
   }
 }
 
-// 实例化一个歌词对象 并对其中的数据进行过滤操作
+// 实例化一个歌词对象 并对其中的数据进行过滤操作 vkey是干嘛的
 export function createSong(musicData, vkey) {
   return new Song({
     id: musicData.songid,

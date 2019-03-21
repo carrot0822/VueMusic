@@ -1,4 +1,5 @@
-import {commonParams} from './config'
+import {commonParams, options} from './config'
+import jsonp from 'jsonp'
 import axios from 'axios'
 export function getTopList() {
   const url = '/api/getTopList'
@@ -33,4 +34,27 @@ export function getTopList() {
     })   
   })
   */
+}
+// 什么时候用转发代理 什么时候jsonp跨域处理
+export function getMusicList(topid) {
+  let url = './api/getMusicList'
+  let data = Object.assign({}, commonParams, {
+    _: 1553176374774,
+    g_tk: 5381,
+    uin: 0,
+    format: 'json',
+    inCharset: 'utf-8',
+    outCharset: 'utf-8',
+    notice: 0,
+    platform: 'h5',
+    needNewCode: 1,
+    topid
+  })
+  // 这个这个函数是给其他组件用的 必须要一个return 才能有值得到 函数处理记得return结果 输出结果
+  return axios.get(url, {
+    params: data
+  }).then((res) => {
+    console.log('没有经过转发')
+    return Promise.resolve(res.data)
+  })
 }

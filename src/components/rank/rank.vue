@@ -3,17 +3,20 @@
     <scroll :data="topList" class="toplist" ref="toplist">
       <ul>
         <li class="item" v-for="(item, index) of topList" :key='index'>
+          <!-- 左侧封面 -->
           <div class="icon">
             <img width="100" height="100" v-lazy="item.picUrl" />
           </div>
+          <!-- 歌词列表 -->
           <ul class="songlist">
-            <li class="song" v-for="(song, index) of item.songList" :key="index">
+            <li @click="selectItem(item)" class="song" v-for="(song, index) of item.songList" :key="index">
               <span>{{index+1}}</span>
               <span>{{song.singername}} -- {{song.songname}}</span>
             </li>
           </ul>
         </li>
       </ul>
+      <!-- loading加载 -->
       <div class="loading-container" v-show="!topList.length">
         <loading></loading>
       </div>
@@ -34,7 +37,7 @@ import {mapMutations} from 'vuex'
 export default {
   created() {
       this._getTopList()
-    },
+  },
   data(){
     return {
       topList:[]
@@ -58,7 +61,17 @@ export default {
       const bottom = play.length ? '60px': ''
       this.$refs.rank.style.bottom = bottom
       this.$refs.toplist.refresh() // 父组件调用子组件的方法 子组件调用父组件的方法
-    }
+    },
+    selectItem(item) {
+      // 这里只是完成了页面跳转 并没有缓存数据 都放在vuex内传递吗
+      this.$router.push({
+        path: `/rank/${item.id}`
+      })
+      this.setTopList(item) // 数据传递
+    },
+    ...mapMutations({ // 是一个对象 数据类型
+      setTopList: 'SET_TOP_LIST'
+    })
   }
 }
 </script>

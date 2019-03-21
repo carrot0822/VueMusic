@@ -1,4 +1,4 @@
-// 常量 字符串常量 mutation用于修改Vuex内的数据
+// 常量 字符串常量 mutation用于修改Vuex内的数据 会有提示
 export const SET_SINGER = 'SET_SINGER'
 
 export const SET_PLAYING_STATE = 'SET_PLAYING_STATE'
@@ -14,3 +14,5 @@ export const SET_PLAY_MODE = 'SET_PLAY_MODE'
 export const SET_CURRENT_INDEX = 'SET_CURRENT_INDEX'
 
 export const SET_DISC = 'SET_DISC'
+
+export const SET_TOP_LIST = 'SET_TOP_LIST'
